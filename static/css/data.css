@@ -1,0 +1,24 @@
+.data{
+    background:#8FBC8F;
+    color: white;
+    border-radius: 20px;
+    float:left;
+    margin: 20px;
+    width:240px;
+    line-height: 220px;
+    text-align: center;
+}
+
+main.white {
+    background-image: url(/static/images/background.jpg);
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.data.arrow {
+
+}
+
+.steps{
+    overflow: hidden;
+}
