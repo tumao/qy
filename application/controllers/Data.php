@@ -33,7 +33,15 @@ class Data extends CI_Controller
 	// upload data of output
 	public function upload_output()
 	{
-		var_dump($_FILES);
+		// var_dump(expression)dump($_FILES['file']);
+		if(isset($_FILES))
+		{
+			$file_name = $_FILES['userfile']['tmp_name'];
+			$file = fopen($file_name, 'r+');
+			$row = fgets($file);
+			$row = explode('\t', string)
+			var_dump($row);
+		}
 
 		$this->load->view('baseview/header');
 		$this->load->view('data/upload_output');
