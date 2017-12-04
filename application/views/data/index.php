@@ -21,9 +21,9 @@
             数据清洗
         </div>
     </a>
-    <a href="/data/comment">
+   <!--  <a href="/data/comment">
         <div class="data">
              评价
         </div>
-    </a>
+    </a> -->
 </div>

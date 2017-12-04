@@ -1,6 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+require ('/ext/Classes/PHPExcel.php');
+
 class Data extends CI_Controller 
 {
 
@@ -9,6 +11,7 @@ class Data extends CI_Controller
 		parent::__construct();
 		$this->load->model('data_model');
 		$this->load->helper(array('form', 'url'));
+		$phpreader = new PHPExcel_Reader_Excel2007();
 
 	}
 	
@@ -34,13 +37,13 @@ class Data extends CI_Controller
 	public function upload_output()
 	{
 		// var_dump(expression)dump($_FILES['file']);
-		if(isset($_FILES))
+		if(isset($_FILES['userfile']))
 		{
 			$file_name = $_FILES['userfile']['tmp_name'];
-			$file = fopen($file_name, 'r+');
-			$row = fgets($file);
-			$row = explode('\t', string)
-			var_dump($row);
+			$excel = $phpreader->load($file_name);
+			$cursheet = $excel->getSheet(0);
+			$colsum = $cursheet->getHighestColumn();
+			$rowsum = $cursheet->getHighestRow();
 		}
 
 		$this->load->view('baseview/header');
@@ -127,7 +130,7 @@ class Data extends CI_Controller
 		
 		$data['r'] = $r;
 
-
+		$this->data_model->standlize();		// 清洗后将分数保存到数据库中
 		$this->load->view('baseview/header');
 		$this->load->view('data/clean', $data);
 		$this->load->view('baseview/footer');
@@ -148,7 +151,9 @@ class Data extends CI_Controller
 		// $this->data_model->standlize();	# 所有产量的得分
 		// $this->data_model->classmerscore();
 		// $this->data_model->merscore();
-		var_dump($_FILES);
+		// var_dump($_FILES);
+		$file = fopen('/file/', 'r');
+
 		
 	}
 
