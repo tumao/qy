@@ -53,7 +53,7 @@ $route['main'] = 'main/index';
 $route['about'] = 'about/index';
 $route['test'] = 'data/test';
 
-$route['default_controller'] = 'main';
+$route['default_controller'] = 'data';
 $route['data'] = 'data';
 $route['data/upload'] = 'data/upload';
 
@@ -68,6 +68,15 @@ $route['data/clean'] = 'data/clean';
 $route['data/comment'] = 'data/comment';
 
 $route['deloutput'] = 'data/deloutput';
+
+$route['data/graphs'] = 'data/graphslist';
+$route['data/graphres'] = 'data/graphresult';
+
+$route['user'] = 'user/test';
+$route['adduser'] = 'user/creatuser';
+$route['load'] = 'user/load';
+$route['auth'] = 'user/auth';
+$route['logout'] = 'user/logout';
 
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;

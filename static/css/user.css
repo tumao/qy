@@ -1,0 +1,30 @@
+body{
+	background-image: url(/static/images/background.jpg);
+}
+
+.input-group .form-control{
+	width: 100%;
+}
+
+.input-group{
+	margin-top: 20px;
+}
+
+.userform{
+	width: 350px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 15%;
+	padding: 50px;
+	border: 1px solid gray;
+	border-radius:30px;
+}
+
+button.btn.btn-default{
+	float: right;
+}
+
+.rember{
+	float: left;
+	margin-right: 125px;
+}

@@ -22,6 +22,7 @@ class Data_model extends CI_Model
 	public function getoutput($partment)
 	{
 		$sql = "SELECT * FROM `class_output` WHERE `partment`=".$partment." ORDER BY `id` DESC LIMIT 20 ";
+		// echo $sql;
 		$r = $this->db->query($sql);
 		return $r->result();
 	}
@@ -35,9 +36,11 @@ class Data_model extends CI_Model
 	}
 
 	// 数据清洗
-	public function cleandata()
+	public function cleandata($partment, $year, $month)
 	{
-		$r = $this->getchangebrand();
+		$timstamp = strtotime($year.'-'.$month);
+		$date = date('Y-m', $timstamp);
+		$r = $this->getchangebrand($partment, $date);
 		if (count($r) > 0)
 		{
 			foreach ($r as $value) 
@@ -160,10 +163,9 @@ class Data_model extends CI_Model
 		$this->db->query($sql);
 	}
 
-	public function getchangebrand()
+	public function getchangebrand($partment, $date)
 	{
-		$sql = "SELECT `date`,`class`,`mid` FROM `class_output` WHERE mid NOT LIKE 'T%' AND `mid` != '15#' GROUP BY `date`, `class`, `mid` HAVING COUNT(output_count) = 1 AND SUM(output_count) > 0 ORDER BY `date` ASC";
-
+		$sql = "SELECT `date`,`class`,`mid` FROM `class_output` WHERE mid NOT LIKE 'T%' AND `mid` != '15#' AND `date` LIKE '%{$date}%' AND `partment`='{$partment}' GROUP BY `date`, `class`, `mid` HAVING COUNT(output_count) = 1 AND SUM(output_count) > 0 ORDER BY `date` ASC";
 		$r = $this->db->query($sql);
 		return $r->result();
 	}
@@ -231,9 +233,6 @@ class Data_model extends CI_Model
 				$maxval = $maxstdop;
 				$result = 100 - (($bz-$bv)/($maxval-$bv))*40;
 			}
-			// $line = array($date, $mid, $class, $bz, $mver, $result);
-			// var_dump($line);
-			// array_push($exdata, $line);
 			$this->savescore($date, $mid, $class, $standop, $mver, $result);
 		}
 
@@ -269,17 +268,7 @@ class Data_model extends CI_Model
 
 	public function getmaxstdop($odata, $mver)
 	{
-		// $list = $midmap[$mver];
 		$max = 0;
-		// foreach ($list as $x) 
-		// {
-		// 	# code...
-		// 	if($x[3] > $max)
-		// 	{
-		// 		$max = $x[3];
-		// 	}
-		// }
-		// return $max;
 		foreach ($odata as $value) 
 		{
 			if($value[4] == $mver)
@@ -313,7 +302,6 @@ class Data_model extends CI_Model
 			}
 		}
 
-		// var_dump($map);$line = array($odate, $oclass, $omid, $standop, $ver);
 		$midnum = array();
 		foreach ($map as $key => $value)
 		{
@@ -321,10 +309,9 @@ class Data_model extends CI_Model
 			$midnum[$key] = $value[ceil(count($value)/2)];
 		}
 
-		// var_dump($midnum);
-		// echo '111';
 		return $midnum;
 	}
+
 	// key:array(array, array)
 	public function savesort($ver, $data)
 	{
@@ -384,12 +371,12 @@ class Data_model extends CI_Model
 	}
 
 	// 获取每天，工班，机型的得分
-	public function classmerscore()
+	public function classmerscore($partment, $year, $month)
 	{
-		$sql =  "SELECT date, class, mver, SUM(standop) as ssop,SUM(score) as sscor,COUNT(mver) as cmver FROM score GROUP BY date, class, mver ORDER BY date, class";
+		$date = date('Y-m', strtotime($year.'-'.$month));
+		$sql =  "SELECT date, class, mver, SUM(standop) as ssop,SUM(score) as sscor,COUNT(mver) as cmver FROM `score` WHERE `date` LIKE '%{$date}%' AND `partment`={$partment} GROUP BY date, class, mver ORDER BY date, class";
 		$query = $this->db->query($sql);
 		$r = $query->result();
-		// var_dump($r);
 		$result = array();
 		foreach ($r as $value) 
 		{
@@ -409,21 +396,24 @@ class Data_model extends CI_Model
 	}
 
 	// 获取机型的得分
-	public function merscore()
+	public function merscore($partment, $year, $month)
 	{
-		$sql =  "SELECT date, mver, SUM(standop) as ssop,SUM(score) as sscor,COUNT(mver) as cmver FROM score GROUP BY date, mver ORDER BY date, class";
+		$date = date('Y-m', strtotime($year.'-'.$month));
+		$sql =  "SELECT date, mver, SUM(standop) as ssop,SUM(score) as sscor,COUNT(mver) as cmver FROM `score` WHERE `date` LIKE '%{$date}%' AND `partment`={$partment} GROUP BY date, mver ORDER BY date";
 		$query = $this->db->query($sql);
 		$r = $query->result();
 		$result = array();
 
-		foreach ($r as $value) {
+		foreach ($r as $value) 
+		{
 			$scoreinfo = $this->getmerscore($value->date, $value->mver);
+			// var_dump($scoreinfo);
 			$score = 0;
 
 			foreach ($scoreinfo as $x)
 			{
-				# code...
-				$score += ($x->standop/$value->ssop)*$x->score;
+				$score = $score + ($x->standop/$value->ssop)*$x->score;
+
 			}
 			$line = array($value->date, $value->mver, $score);
 			array_push($result, $line);
@@ -448,5 +438,35 @@ class Data_model extends CI_Model
 		$result = $query->result();
 		return $result;
 	}
+    
+    // uploat output data to mysql
+    public function insert_class_output($date, $class, $brand, $mid, $output_count, $partment)
+    {
+        $sql = "INSERT INTO `class_output`(`date`, `class`, `brand`, `mid`, `output_count`, `partment`) VALUES ('{$date}', '{$class}', '{$brand}', '{$mid}', '{$output_count}', '{$partment}')";
+        $this->db->query($sql);
+    }
+    
+    // upload halt time to mysql
+    public function insert_halttime($date, $part, $class, $mid, $class_sort, $halttime)
+    {
+        $sql = "INSERT INTO `halted_time`(`date`, `part`, `class`, `mid`, `class_sort`, `halttime`) VALUES ('{$date}', '{$part}', '{$class}', '{$mid}', '{$class_sort}', '{$halttime}')";
+        $this->db->query($sql);
+    }
 
+
+    // get all mver 
+    public function mvers($part)
+    {
+    	$sql = "SELECT `mver` FROM `score` WHERE `partment`='{$part}' GROUP BY `mver`";
+    	$q = $this->db->query($sql);
+    	return $q->result();
+    }
+
+    // get classes
+    public function classes($part)
+    {
+    	$sql = "SELECT `class` FROM `score` WHERE `partment`='{$part}' GROUP BY `class`";
+    	$q = $this->db->query($sql);
+    	return $q->result();
+    }
 }

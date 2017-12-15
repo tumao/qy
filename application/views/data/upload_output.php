@@ -2,7 +2,7 @@
 <script src="/static/js/data.js"></script>
 <div class="container">
     <div>
-        <div style="font-size:20px;">关于上传交接班数据的格式说明（从第一列到最后一列）请按照如下格式上传excel表格：</div>
+        <div style="font-size:20px;">关于上传交接班数据的格式说明（从第一列到最后一列）请按照如下格式上传excel(xml)表格：</div>
         <div style="padding:20px; font-size:18px;">
             第一列 日期， 如：2017-09-01<br/>
             第二列 班组， 如：一工班<br/>

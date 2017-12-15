@@ -26,9 +26,9 @@
             <input type="checkbox" id="menu"/>
             <!-- {{=MENU(response.menu,_class='menu')}} -->
             <ul class='menu'>
-              <li><a href="/">首页</a></li>
+              <!-- <li><a href="/">首页</a></li> -->
               <li><a href="/data">数据</a></li>
-              <li><a href="/">关于</a></li>
+              <!-- <li><a href="/">关于</a></li> -->
             </ul>
           </div>
         </div>

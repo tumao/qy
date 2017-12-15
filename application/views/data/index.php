@@ -21,9 +21,14 @@
             数据清洗
         </div>
     </a>
-   <!--  <a href="/data/comment">
+    <a href="/data/graphslist" target="_Blank">
         <div class="data">
-             评价
+             评价图表
         </div>
-    </a> -->
+    </a>
+    <a href="#">
+        <div class="data">
+             权限控制
+        </div>
+    </a>
 </div>

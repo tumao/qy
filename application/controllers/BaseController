@@ -1,0 +1,37 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+// require('User');
+
+class BaseController extends CI_Controller
+{
+	public function __construct()
+	{
+		parent::__construct();
+		// var_dump($_SESSION);
+		session_start();
+		// $this->load->model('user_model');
+		if(!$this->loaded() && $_SERVER['REQUEST_URI'] != '/load')	// if not loaded
+		{
+
+			header("Location:/load");
+		}
+	}
+
+	public function loaded()
+	{
+		if(isset($_SESSION['username']))
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	private function load()
+	{
+
+	}
+}
