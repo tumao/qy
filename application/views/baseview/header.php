@@ -15,6 +15,7 @@
    
      <!--<link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">-->
     <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/static/css/common.css">
     <script type="text/javascript" src="/static/js/jquery.js"></script>
   </head>
   <body class="black">   
@@ -29,6 +30,7 @@
               <!-- <li><a href="/">首页</a></li> -->
               <li><a href="/data">数据</a></li>
               <!-- <li><a href="/">关于</a></li> -->
+              <li id='logstatus'><a href="/logout">退出</a></li>
             </ul>
           </div>
         </div>

@@ -210,12 +210,14 @@ class Data extends BaseController
 
 	public function test()
 	{
-		$admin = 0x0001;
-		$superadmin = 0x0002;
-		$user = 0x0004;
-		$test = 0x0007;
-		echo $admin&$supead;
-		
+		// $admin = 0x0001;
+		// $superadmin = 0x0002;
+		// $user = 0x0004;
+		// $test = 0x0007;
+		// echo $admin&$supead;
+		// var_dump($this->data_model->get_k('PROTOSM5', '云烟（紫）'));
+		// $r = $this->data_model->standlize('2', '2017', '9');
+		$this->data_model->nclassmersc('2', '2017', '9');
 	}
 
 	// 每日班组机型的得分
@@ -267,7 +269,9 @@ class Data extends BaseController
 	{
 		$mvers = $this->data_model->mvers(1);
 		$data['mvers'] = $mvers;
+		// $this->load->view('baseview/header');
 		$this->load->view('data/graphslist', $data);
+		// $this->load->view('baseview/footer');
 	}
 
 	public function graphresult()
@@ -314,6 +318,7 @@ class Data extends BaseController
 			$nmerscore[$mver] = $line;
 
 		}
+		// var_dump($verline);
 		$data['mvers'] = $mvers;
 		$data['classes'] = $classes;
 		$data['result'] = $verline;

@@ -60,7 +60,6 @@ $(document).ready(function(){
 			tmpdata = list[tmp];
 			if(tmpdata){
 				var line = tmpdata.map(function(item){
-					console.log(item[0	]);
 					return item[1];
 				});
 
@@ -73,7 +72,6 @@ $(document).ready(function(){
 
 			}
 		}
-		// console.log(seriesdata);
 		option = setchartOption('机型得分', dateList, seriesdata, mverlist);
 		myChart.setOption(option);
 
@@ -81,6 +79,7 @@ $(document).ready(function(){
 
 
 	function setchartOption(chartName, dateList, seriesdata, namelist){
+		// console.log(seriesdata);
 		 // 指定图表的配置项和数据
 	 
 	    // 使用刚指定的配置项和数据显示图表。
@@ -117,6 +116,7 @@ $(document).ready(function(){
 		    },
 		    series: seriesdata
 		};
+
 	    return option;
 	}
 });

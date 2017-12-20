@@ -64,7 +64,7 @@ class Data_model extends CI_Model
 			$odate = $value->date;
 			$oclass = $value->class;
 			$omid = $value->mid;
-			$mver = $this->getver($omid);
+			$mver = $this->getver($partment, $omid);
 			$htinfo = $this->gethalttime($odate, $oclass, $omid);
 			if($htinfo !== -1 AND count($htinfo)>0)
 			{
@@ -147,12 +147,37 @@ class Data_model extends CI_Model
 	}
 
 	// 通过机组号获取机型
-	private function getver($omid)
+	private function getver($partment, $omid)
 	{
-		$sql = "SELECT `mver` FROM `balance_k` WHERE `mid`='{$omid}'";
+		// $sql = "SELECT `mver` FROM `balance_k` WHERE `mid`='{$omid}'";
+		// $q = $this->db->query($sql);
+		// $r = $q->result();
+		// return $r[0]->mver;
+
+		// $sql = "SELECT `mver` FROM `mver` WHERE `moid`='{$moid}'";
+		$sql = "SELECT `mver` FROM `mver` WHERE `partment`='{$partment}'";
 		$q = $this->db->query($sql);
 		$r = $q->result();
+
 		return $r[0]->mver;
+	}
+
+	// to be edit
+	public function get_k($mver, $brand)
+	{
+		// $sql = "SELECT MAX(`speed`) as maxspeed FROM `speed`";
+		// $query = $this->db->query($sql);
+		// $result = $query->result();
+		// $maxspeed = $result[0]->maxspeed;
+
+		// $sql = "SELECT `speed` FROM `speed` WHERE `mver` = '{$mver}' AND `brand` = '{$brand}'";
+		// $query = $this->db->query($sql);
+		// $result = $query->result();
+		// $speed = $result[0]->speed;
+		// $k_val = $maxspeed/$speed;
+
+		// return $k_val;
+		return 1;
 	}
 
 // 设置当前数据是否可用
@@ -171,18 +196,20 @@ class Data_model extends CI_Model
 	}
 
 	// 获取清洗后的数据
-	public function getcleaneddata()
+	public function getcleaneddata($partment, $date)
 	{
-		$sql = "SELECT * FROM `class_output` WHERE `valid`=1 ORDER BY `date` ASC";
+		
+		$sql = "SELECT * FROM `class_output` WHERE `valid`=1 AND `partment` = '{$partment}' AND `date` like '%{$date}%' ORDER BY `date` ASC";
 		$q = $this->db->query($sql);
 		$r = $q->result();
 		return $r;
 	}
 
 	// 标准产量
-	public function standlize()
+	public function standlize($partment, $year, $month)
 	{
-		$r = $this->getcleaneddata();
+		$date = date('Y-m', strtotime($year.'-'.$month));
+		$r = $this->getcleaneddata($partment, $date);
 		$odata = array();
 		foreach ($r as $value)
 		{
@@ -192,13 +219,13 @@ class Data_model extends CI_Model
 			$omid = $value->mid;
 			$obrand = $value->brand;
 			$oop = $value->output_count/5;
-			$ver = $this->getver($omid);
+			$ver = $this->getver($partment, $omid);
 			$htinfo = $this->gethalttime($odate, $oclass, $omid);
 			$class_sort = $htinfo->class_sort;
 			$httime = $htinfo->halttime;
 			$worktime = $this->worktime($class_sort);
 
-			$k = $this->getbk($omid, $obrand);		// 未定义的函数
+			$k = $this->get_k($ver, $obrand);
 			if ($k > 0)		// 对有均衡值比的进行计算
 			{
 				$standop = $oop * $k * (360 /($worktime-$httime/60));
@@ -210,10 +237,9 @@ class Data_model extends CI_Model
 		$balanceop = $this->midnum($odata);
 
 		$exdata = array();
-
 		foreach ($odata as $value) 
 		{
-			// var_dump($value);
+			$line = array();
 			$date = $value[0];
 			$class = $value[1];
 			$mid = $value[2];
@@ -233,7 +259,9 @@ class Data_model extends CI_Model
 				$maxval = $maxstdop;
 				$result = 100 - (($bz-$bv)/($maxval-$bv))*40;
 			}
-			$this->savescore($date, $mid, $class, $standop, $mver, $result);
+			// $this->savescore($date, $mid, $class, $standop, $mver, $result);		// save values to mysql
+			$line = array($date, $mid, $class, $standop, $mver, $result);
+			array_push($exdata, $line);
 		}
 
 		return $exdata;
@@ -468,5 +496,40 @@ class Data_model extends CI_Model
     	$sql = "SELECT `class` FROM `score` WHERE `partment`='{$part}' GROUP BY `class`";
     	$q = $this->db->query($sql);
     	return $q->result();
+    }
+
+    // the class score of ever merchine
+    public function nclassmersc($partment, $year, $month)
+    {
+    	$date = date('Y-m', strtotime($year.'-'.$month));
+    	$firpstdop = $this->standlize(1, $year, $month);
+    	$secpstdop = $this->standlize(2, $year, $month);
+    	$result = array();
+
+    	foreach ($standdata as $value) 
+    	{
+    		# code...array(6) {
+			//   [0]=>
+			//   string(10) "2017-09-01"
+			//   [1]=>
+			//   string(2) "4#"
+			//   [2]=>
+			//   string(9) "二工班"
+			//   [3]=>
+			//   float(53.123348255218)
+			//   [4]=>
+			//   string(5) "ZJ118"
+			//   [5]=>
+			//   float(76.757418104983)
+			// }
+			if(!isset($result[$value[4]]))
+			{
+				$merline = array();
+				$claline = array();
+				$standop = array();
+				$merline = array($value[4]=>array($value[2]=>array($value[0]=>array($value[3], $value[5]))));
+				var_dump($merline);
+			}
+    	}
     }
 }
