@@ -14,6 +14,8 @@ class Data extends BaseController
 		$this->load->model('data_model');
 		$this->load->helper(array('form', 'url'));
         $objphpexcel = new PHPExcel();
+        $this->load->driver('cache');
+        $this->load->library('RedisLi');
 //        
 	}
 	
@@ -210,14 +212,8 @@ class Data extends BaseController
 
 	public function test()
 	{
-		// $admin = 0x0001;
-		// $superadmin = 0x0002;
-		// $user = 0x0004;
-		// $test = 0x0007;
-		// echo $admin&$supead;
-		// var_dump($this->data_model->get_k('PROTOSM5', '云烟（紫）'));
-		// $r = $this->data_model->standlize('2', '2017', '9');
-		$this->data_model->nclassmersc('2', '2017', '9');
+		$r = $this->data_model->partscr('2017','9');
+		var_dump($r);
 	}
 
 	// 每日班组机型的得分
@@ -267,11 +263,7 @@ class Data extends BaseController
 
 	public function graphslist()
 	{
-		$mvers = $this->data_model->mvers(1);
-		$data['mvers'] = $mvers;
-		// $this->load->view('baseview/header');
-		$this->load->view('data/graphslist', $data);
-		// $this->load->view('baseview/footer');
+		$this->load->view('data/graphlist1');
 	}
 
 	public function graphresult()
@@ -318,11 +310,143 @@ class Data extends BaseController
 			$nmerscore[$mver] = $line;
 
 		}
-		// var_dump($verline);
+
 		$data['mvers'] = $mvers;
 		$data['classes'] = $classes;
 		$data['result'] = $verline;
 		$data['merscore'] = $nmerscore;
+		var_dump($data);exit;
 		exit(json_encode($data));
 	}
+
+	public function newclamerscr($partment='1', $year='2017', $month='9')
+	{
+		$clamerscore = $this->data_model->nclassmersc($partment, $year, $month);	// part_mer_class_date
+
+		$newclamerscr = array();
+		foreach($clamerscore as $key => $item)
+		{
+			$itemlist = explode('_', $key);
+
+			if(isset($newclamerscr[$itemlist[1]]))
+			{
+				$merline = $newclamerscr[$itemlist[1]];
+				// if(isset($newclamerscr[$itemlist[1]][$itemlist[2]]))
+				if(isset($merline[$itemlist[2]]))
+				{
+					$classline = $merline[$itemlist[2]];
+					array_push($classline, array($itemlist[3], $item));
+					$merline[$itemlist[2]] = $classline;
+				}
+				else
+				{
+					$tempclaline = array();
+					array_push($tempclaline, array($itemlist[3], $item));
+					$merline[$itemlist[2]] = $tempclaline;
+				}
+				$newclamerscr[$itemlist[1]] = $merline;
+			}
+			else
+			{	
+				$tmp = array();
+				array_push($tmp, array($itemlist[3], $item));
+				$tempclaline = array($itemlist[2]=>$tmp);
+				$newclamerscr[$itemlist[1]] = $tempclaline;
+			}
+		}
+
+		return $newclamerscr;
+	}
+
+	 /*
+	 * part result of merchine
+	 */
+	public function newmerscr($partment, $year, $month)
+	{
+		$merscore = $this->data_model->nmerscr($partment, $year, $month);			// part_mer_date
+
+		$newmerscr = array();
+
+		foreach($merscore as $key => $item)
+		{
+			$itemlist = explode('_', $key);			// 0:part 1:mer 2:date
+
+			if(isset($newmerscr[$itemlist[1]]))
+			{
+				$merline = $newmerscr[$itemlist[1]];
+				array_push($merline, array($itemlist[2], $item));
+				$newmerscr[$itemlist[1]]= $merline;
+			}
+			else
+			{
+				$tmp = array();
+				array_push($tmp, array($itemlist[2], $item));
+				$newmerscr[$itemlist[1]] = $tmp;
+			}
+		}
+		return $newmerscr;
+	}
+
+	public function partscr($year, $month)
+	{
+		$partscr = $this->data_model->partscr($year, $month);
+		$newpartscr = array();
+
+		foreach($partscr as $key=>$val)
+		{
+			$itemlist = explode('_', $key);
+
+			if(isset($newpartscr[$itemlist[0]]))
+			{
+				$oldline = $newpartscr[$itemlist[0]];
+				array_push($oldline, array($itemlist[1], $val));
+				$newpartscr[$itemlist[0]] = $oldline;
+			}
+			else
+			{
+				$tmp = array();
+				array_push($tmp, array($itemlist[1], $val));
+				$newpartscr[$itemlist[0]] = $tmp;
+			}
+		}
+
+		return $newpartscr;
+	}
+
+	/*
+	*
+	*
+	*/
+	public function chartmain()
+	{
+		
+		if(isset($_GET['timestamp']))
+		{
+			$timestamp = $_GET['timestamp'];
+			$timestamp = strtotime($timestamp);
+			$date = date('Y-m', $timestamp);
+			$date = explode('-', $date);
+			$year = $date[0];
+			$month = $date[1];
+		}
+		else
+		{
+			$date = $this->data_model->newestdate();
+			$date = explode('-', $date);
+			$year = $date[0];
+			$month = $date[1];
+		}
+
+		$part1 = $this->newmerscr(1, $year, $month);
+		$part2 = $this->newmerscr(2, $year, $month);
+
+		$data['evepart'] = array($part1, $part2);
+		$data['partscr'] = $this->partscr($year, $month);
+
+		// $data['mainchart'] = 
+		exit(json_encode($data));
+
+	}
+
+
 }

@@ -1,24 +1,84 @@
 $(document).ready(function(){
+	$('.form_date').datetimepicker({
+	    language:  'zh-CN',
+	    format:'yyyy-mm',
+	    weekStart: 1,
+	    todayBtn:  1,
+		autoclose: 1,
+		todayHighlight: 1,
+		startView: 3,
+		minView: 3,
+		forceParse: 0
+	}).on('changeDate', function(ev){
+		console.log(ev);
+		$.ajax({
+			url : '/data/chartmain',
+			data : {timestamp:ev.date},
+			dataType:'json',
+			method: 'GET',
+			success : function(data){
+				newsetchart('part1','制造一部', data['evepart'][0]);
+				newsetchart('part2','制造二部', data['evepart'][1]);
+				newsetchart('centercontent', '部门综合', data['partscr']);
+			}
+		});
+	});
 
 	$.ajax({
-		url :'/data/graphres',
+		url :'/data/chartmain',
 		dataType : 'json',
-		method :'GET',
+		method : 'GET',
 		success: function(data){
-			var mers = data.mvers;
-			var classes = data.classes;
-			var list = data.result;
-			for(x in mers){
-				// mers[x].mver;   		// merchine version
-				setchart(mers[x].mver, classes, list);	
-			}
-
-			setmerchart('merchart', mers, data.merscore);
+			newsetchart('part1','制造一部', data['evepart'][0]);
+			newsetchart('part2','制造二部', data['evepart'][1]);
+			newsetchart('centercontent', '部门综合', data['partscr']);
 		}
 	});
 
+	function newsetchart(tag, chartname, list)
+	{
+		var myChart = echarts.init(document.getElementById(tag));
+		var seriesdata = new Array();
+		var keys = new Array();
+		var len = 0;
+		var dateline = Array();
+		for (x in list){
+			if(x == '1'){
+				keys.push("制造一部");
+				name = "制造一部";
+			}
+			else if (x=='2'){
+				keys.push("制造二部");
+				name = "制造二部";
+			}else{
+				keys.push(x);
+				name = x;
+			}
+
+			var tmpdata = list[x];
+			
+			if(tmpdata){
+				var line = tmpdata.map(function(item){
+					return item[1];
+				});
+				if(tmpdata.length > len){
+					len = tmpdata.length;
+					var dateline = tmpdata.map(function(item){
+						return item[0];
+					});																																																											
+				}
+				seriesdata.push({type: 'line', data: line, name:name, stack:name});
+				
+			}
+		}
+		option = setchartOption(chartname, dateline, seriesdata, keys);
+		myChart.setOption(option);
+	}
+
+
 	function setchart(tag, classes, list)	
 	{
+
 		var myChart = echarts.init(document.getElementById(tag));
 		var seriesdata = new Array();
 		var classes;
@@ -47,39 +107,7 @@ $(document).ready(function(){
 		myChart.setOption(option);
 	}
 
-
-	function setmerchart(tag, mvers, list){
-		var myChart = echarts.init(document.getElementById(tag));
-		var seriesdata = new Array();
-		var dateList;
-		var mverlist = new Array();
-		for (idx in mvers){
-			var tmpdata = new Array();
-			var tmp = mvers[idx].mver;
-			mverlist.push(tmp);
-			tmpdata = list[tmp];
-			if(tmpdata){
-				var line = tmpdata.map(function(item){
-					return item[1];
-				});
-
-				var dateline = tmpdata.map(function(item){
-					return item[0];
-				});
-				dateList = dateline;
-				// name stack type data
-				seriesdata.push({type: 'line',data: line, name:tmp, stack:tmp});
-
-			}
-		}
-		option = setchartOption('机型得分', dateList, seriesdata, mverlist);
-		myChart.setOption(option);
-
-	}
-
-
 	function setchartOption(chartName, dateList, seriesdata, namelist){
-		// console.log(seriesdata);
 		 // 指定图表的配置项和数据
 	 
 	    // 使用刚指定的配置项和数据显示图表。
@@ -118,5 +146,10 @@ $(document).ready(function(){
 		};
 
 	    return option;
+	}
+
+
+	function test(){
+		alert(123123213);
 	}
 });

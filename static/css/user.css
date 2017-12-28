@@ -16,8 +16,11 @@ body{
 	margin-right: auto;
 	margin-top: 15%;
 	padding: 50px;
+	padding-top: 15px;
+	padding-bottom: 15px;
 	border: 1px solid gray;
 	border-radius:30px;
+	background-color: #F7EED6;
 }
 
 button.btn.btn-default{
@@ -26,5 +29,9 @@ button.btn.btn-default{
 
 .rember{
 	float: left;
-	margin-right: 125px;
+	margin-right: 95px;
+}
+button#onload{
+	width: 80px;
+	height: 50px;
 }

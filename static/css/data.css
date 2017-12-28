@@ -22,3 +22,60 @@ main.white {
 .steps{
     overflow: hidden;
 }
+body{
+    background-image: url(/static/images/background.jpg);
+    padding: 0px;
+    margin: 0px;
+}
+.container{
+    /*margin: 20px;
+    padding: 20px;*/
+    width: auto;
+}
+.classchart{
+    float: left;
+}
+.classtitle span{
+    font-size: 18px;
+    text-align: center;
+    padding: 20px;
+}
+.menu{
+    height: 30px;
+    background-color: #8FBC8F;
+}
+.menu li{
+    list-style: none;
+    padding:3px 10px;
+    /*padding-left: 10px;*/
+
+}
+.menu li a{
+    text-decoration: none;
+    color: white;
+}
+li.menuitem{
+    float: left;
+}
+li.miditem{
+    float: left;
+    display: inline-block;
+    width: 1200px;
+    text-align: center;
+}
+li.logout{
+    float: right;
+}
+.leftsidebar{
+    border: 1px solid #8FBC8F;
+    border-top: 0px solid;
+    border-bottom: 0px;
+    width: 500px;
+    height: 900px;
+    float: left;
+}
+.center{
+    border-left: 1px solid #8FBC8F;
+    height: 800px;
+    margin-left: 2px;
+}

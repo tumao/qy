@@ -6,6 +6,7 @@ class Data_model extends CI_Model
 	{
 		parent::__construct();
 		$this->load->database('default', true);
+		$this->load->library('RedisLi');
 	}
 
 	// score
@@ -149,38 +150,32 @@ class Data_model extends CI_Model
 	// 通过机组号获取机型
 	private function getver($partment, $omid)
 	{
-		// $sql = "SELECT `mver` FROM `balance_k` WHERE `mid`='{$omid}'";
-		// $q = $this->db->query($sql);
-		// $r = $q->result();
-		// return $r[0]->mver;
-
-		// $sql = "SELECT `mver` FROM `mver` WHERE `moid`='{$moid}'";
-		$sql = "SELECT `mver` FROM `mver` WHERE `partment`='{$partment}'";
+		$sql = "SELECT `mver` FROM `mver` WHERE `partment`='{$partment}' AND `moid`='{$omid}'";
+		// var_dump($sql);
 		$q = $this->db->query($sql);
 		$r = $q->result();
-
 		return $r[0]->mver;
 	}
 
 	// to be edit
 	public function get_k($mver, $brand)
 	{
-		// $sql = "SELECT MAX(`speed`) as maxspeed FROM `speed`";
-		// $query = $this->db->query($sql);
-		// $result = $query->result();
-		// $maxspeed = $result[0]->maxspeed;
+		$sql = "SELECT MAX(`speed`) as maxspeed FROM `speed`";
+		$query = $this->db->query($sql);
+		$result = $query->result();
+		$maxspeed = $result[0]->maxspeed;
 
-		// $sql = "SELECT `speed` FROM `speed` WHERE `mver` = '{$mver}' AND `brand` = '{$brand}'";
-		// $query = $this->db->query($sql);
-		// $result = $query->result();
-		// $speed = $result[0]->speed;
-		// $k_val = $maxspeed/$speed;
+		$sql = "SELECT `speed` FROM `speed` WHERE `mver` = '{$mver}' AND `brand` = '{$brand}'";
+		// var_dump($sql);
+		$query = $this->db->query($sql);
+		$result = $query->result();
+		$speed = $result[0]->speed;
+		$k_val = $maxspeed/$speed;
 
-		// return $k_val;
-		return 1;
+		return $k_val;
 	}
 
-// 设置当前数据是否可用
+	// 设置当前数据是否可用
 	private function setdatavalid($id, $stat=0)
 	{
 		$sql = "UPDATE `class_output` SET `valid`={$stat} WHERE `id`={$id}";
@@ -314,6 +309,7 @@ class Data_model extends CI_Model
 
 	public function midnum($odata)
 	{
+		// var_dump($odata);
 		$map = array();
 		foreach ($odata as $val) 
 		{
@@ -502,34 +498,189 @@ class Data_model extends CI_Model
     public function nclassmersc($partment, $year, $month)
     {
     	$date = date('Y-m', strtotime($year.'-'.$month));
-    	$firpstdop = $this->standlize(1, $year, $month);
-    	$secpstdop = $this->standlize(2, $year, $month);
+    	// $firpstdop = $this->standlize(1, $year, $month);
+    	$secpstdop = $this->standlize($partment, $year, $month);
     	$result = array();
 
-    	foreach ($standdata as $value) 
+    	foreach ($secpstdop as $value) // 4:mer 2:class 0:date 3:output 5:score
     	{
-    		# code...array(6) {
-			//   [0]=>
-			//   string(10) "2017-09-01"
-			//   [1]=>
-			//   string(2) "4#"
-			//   [2]=>
-			//   string(9) "二工班"
-			//   [3]=>
-			//   float(53.123348255218)
-			//   [4]=>
-			//   string(5) "ZJ118"
-			//   [5]=>
-			//   float(76.757418104983)
-			// }
-			if(!isset($result[$value[4]]))
+			
+			$k = $partment.'_'.$value[4].'_'.$value[2].'_'.$value[0];			// part_mer_class_date
+			$v = $value[3];
+
+			if(!isset($result[$k]))
 			{
-				$merline = array();
-				$claline = array();
-				$standop = array();
-				$merline = array($value[4]=>array($value[2]=>array($value[0]=>array($value[3], $value[5]))));
-				var_dump($merline);
+				$result[$k] = $v;
+			}
+			else
+			{
+				$newv = $result[$k];
+				$result[$k] = $v+$newv;
 			}
     	}
+
+    	// var_dump($result);
+    	$scorelist = array();
+
+    	foreach($secpstdop as $value)
+    	{
+    		$k = $partment.'_'.$value[4].'_'.$value[2].'_'.$value[0];			// part_mer_class_date
+    		$v = $value[3];
+    		$ratio = $v/$result[$k];
+    		$ratioscore = $value[5]*$ratio;
+
+    		if(!isset($scorelist[$k]))
+    		{
+    			$scorelist[$k] = $ratioscore;
+    		}
+    		else
+    		{
+    			$oldscore = $scorelist[$k];
+    			$scorelist[$k] = $oldscore + $ratioscore;
+    		}
+    	}
+
+    	return $scorelist;
     }
+
+    public function nmerscr($partment, $year, $month)
+    {
+		// $date = date('Y-m', strtotime($year.'-'.$month));
+		$secpstdop = $this->standlize($partment, $year,$month);
+		$result = array();
+
+		foreach ($secpstdop as $key => $value)
+		{
+			$k = $partment.'_'.$value[4].'_'.$value[0];				// part_mer_date
+			$v = $value[3];
+
+			if(!isset($result[$k]))
+			{
+				$result[$k] = $v;
+			}
+			else
+			{
+				$newv = $result[$k];
+				$result[$k] = $v + $newv;
+			}
+		}
+
+		$scorelist = array();
+
+		foreach ($secpstdop as $value) 
+		{
+			$k = $partment.'_'.$value[4].'_'.$value[0];				// part_mer_date
+			$v = $value[3];
+			$ratio = $v/$result[$k];
+			$ratioscore = $value[5]*$ratio;
+
+			if(!isset($scorelist[$k]))
+    		{
+    			$scorelist[$k] = $ratioscore;
+    		}
+    		else
+    		{
+    			$oldscore = $scorelist[$k];
+    			$scorelist[$k] = $oldscore + $ratioscore;
+    		}
+		}
+
+		return $scorelist;
+    }
+
+    public function partscr($year, $month)
+    {
+    	// $date = date('Y-m', strtotime($year.'-'.$month));
+    	$stdop1 = $this->standlize('1', $year,$month);
+    	$stdop2 = $this->standlize('2', $year,$month);
+
+    	$scorelist = array();
+
+    	$nstdop1 = array();
+    	foreach($stdop1 as $key => $value)
+    	{
+    		$k = '1_'.$value[0];
+    		$v = $value[3];
+
+    		if(!isset($nstdop1[$k]))
+    		{
+    			$nstdop1[$k] = $v;
+    		}
+    		else
+    		{
+    			$newv = $nstdop1[$k];
+    			$nstdop1[$k] = $v + $newv;
+    		}
+    	}
+
+    	$nstdop2 = array();
+    	foreach($stdop2 as $key => $value)
+    	{
+    		$k = '2_'.$value[0];
+    		$v = $value[3];
+
+    		if(!isset($nstdop2[$k]))
+    		{
+    			$nstdop2[$k] = $v;
+    		}
+    		else
+    		{
+    			$newv = $nstdop2[$k];
+    			$nstdop2[$k] = $v + $newv;
+    		}
+    	}
+
+    	for ($i = 1; $i<=2; $i++)
+    	{
+    		$tmpstdop = null;
+    		$nstdop = null;
+    		if($i == 1)
+    		{
+    			$tmpstdop = $stdop1;
+    			$nstdop = $nstdop1;
+    		}
+    		else/*($i == 2)*/
+    		{
+    			$tmpstdop = $stdop2;
+    			$nstdop = $nstdop2;
+    		}
+    		foreach($tmpstdop as $key => $value)
+	    	{
+	    		$k = strval($i).'_'.$value[0];				// part_mer_date
+				$v = $value[3];
+
+				$ratio = $v/$nstdop[$k];
+				
+				$ratioscore = $value[5]*$ratio;
+
+				if(!isset($scorelist[$k]))
+	    		{
+	    			$scorelist[$k] = $ratioscore;
+	    		}
+	    		else
+	    		{
+	    			$oldscore = $scorelist[$k];
+	    			$scorelist[$k] = $oldscore + $ratioscore;
+	    		}
+	    	}
+    	}
+
+    	return $scorelist;
+    }
+
+    // get new date from out put
+    public function newestdate()
+    {
+    	$sql = "SELECT date FROM `class_output` ORDER BY id DESC LIMIT 1";
+    	$q = $this->db->query($sql);
+    	$res = $q->result();
+    	return $res[0]->date;
+    }
+
+    // use of rate
+    public function dataratio()
+    {
+    	
+    }
+
 }
