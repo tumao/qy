@@ -1,4 +1,4 @@
-<link href="/static/css/data.css" rel="stylesheet" type="text/css"/>
+ <link href="/static/css/data.css" rel="stylesheet" type="text/css"/>
 <script src="/static/js/data.js"></script>
 <div class="container">
     <a href="/bala/data/index">

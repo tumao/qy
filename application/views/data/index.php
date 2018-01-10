@@ -26,9 +26,9 @@
              评价图表
         </div>
     </a>
-    <a href="#">
+    <!-- <a href="#">
         <div class="data">
              权限控制
         </div>
-    </a>
+    </a> -->
 </div>

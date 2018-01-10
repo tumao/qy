@@ -680,7 +680,7 @@ class Data_model extends CI_Model
     // use of rate
     public function dataratio()
     {
-    	
+    		
     }
 
 }

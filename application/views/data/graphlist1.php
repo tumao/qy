@@ -63,6 +63,7 @@ div#centercontent{
 					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
                 </div>
 				<input type="hidden" id="dtp_input2" value="" /><br/>
+				<label>others</label>
             </div>
 		</div>
 		<div id='centercontent'>
