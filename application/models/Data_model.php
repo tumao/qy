@@ -20,10 +20,10 @@ class Data_model extends CI_Model
 	}
 
 	// get out put 
-	public function getoutput($partment)
+	public function getoutput($partment, $year, $month)
 	{
-		$sql = "SELECT * FROM `class_output` WHERE `partment`=".$partment." ORDER BY `id` DESC LIMIT 20 ";
-		// echo $sql;
+		$date = $year.'-'.$month;
+		$sql = "SELECT * FROM `class_output` WHERE `partment`=".$partment." AND date LIKE '%".$date."%' ORDER BY `id` DESC LIMIT 17 ";
 		$r = $this->db->query($sql);
 		return $r->result();
 	}
@@ -31,9 +31,17 @@ class Data_model extends CI_Model
 	public function gethalttimelist($partment, $year, $month)
 	{
 		$date = $year.'-'.$month;
-		$sql = "SELECT * FROM `halted_time` WHERE date LIKE '%".$date."%' AND part = ".$partment." ORDER BY `id` DESC LIMIT 20";
+		$sql = "SELECT * FROM `halted_time` WHERE date LIKE '%".$date."%' AND part = ".$partment." ORDER BY `id` DESC LIMIT 17";
 		$r = $this->db->query($sql);
 		return $r->result();
+	}
+
+	public function edit_merid($part, $moid, $mver)
+	{
+		$sql = "UPDATE `mver` SET mver = ".$mver." WHERE part= {$part} AND moid = {$moid}";
+		$this->db->query($sql);
+
+		return 1;
 	}
 
 	// 数据清洗

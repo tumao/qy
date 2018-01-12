@@ -134,13 +134,19 @@ class Data extends BaseController
 	public function edit_output()
 	{
 		$partment = 1;
+		$year = 2017;
+		$month = 9;
 		if (isset($_GET['partment']))
 		{
 			$partment = $_GET['partment'];
 		}
-		$year = 2017;
-		$month = 9;
-		$result = $this->data_model->getoutput($partment);
+		if(isset($_GET['date'])){
+			$date = $_GET['date'] ;
+		}
+		$year = explode('-', $date)[0];
+		$month = explode('-', $date)[1];
+		
+		$result = $this->data_model->getoutput($partment, $year, $month);
 		$data['result'] = $result;
 		$data['partment'] = $partment;
 		$data['year'] = $year;
@@ -163,7 +169,18 @@ class Data extends BaseController
 		$partment = $_GET['partment'];
 		$year = '2017';
 		$month = '09';
-		$r = $this->data_model->gethalttimelist($partment, '2017', '09');	
+		if (isset($_GET['partment']))
+		{
+			$partment = $_GET['partment'];
+		}
+		if(isset($_GET['date'])){
+			$date = $_GET['date'] ;
+		}
+
+		$year = explode('-', $date)[0];
+		$month = explode('-', $date)[1];
+
+		$r = $this->data_model->gethalttimelist($partment, $year, $month);
 		$data['result'] = $r;
 		$data['partment'] = $partment;
 		$data['year'] = $year;
@@ -446,6 +463,23 @@ class Data extends BaseController
 		// $data['mainchart'] = 
 		exit(json_encode($data));
 
+	}
+
+	public function edit_merid()
+	{
+		$part = 1;
+		$moid = '1#';
+		if(isset($_GET['part']))
+		{
+			$part = $_GET['part'];
+		}
+		if(isset($_GET['moid']))
+		{
+			$moid = $_GET['moid'];
+		}
+		$mver = $_GET['mver'];
+
+		$this->data_model->edit_merid($part, $moid, $mver);
 	}
 
 
